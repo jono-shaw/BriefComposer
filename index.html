@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design Project Brief Composer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: #000;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #ffdc00;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #000;
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header h2 {
+            color: #666;
+            font-size: 1.2em;
+            font-weight: 400;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .brief-article {
+            background-color: #f9f9f9;
+            padding: 40px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: box-shadow 0.3s ease;
+            display: flex;
+            gap: 40px;
+        }
+
+        .brief-article:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        .brief-article h3 {
+            color: #000;
+            margin-bottom: 30px;
+            font-size: 1.3em;
+        }
+
+        .article-text {
+            background-color: white;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+            line-height: 1.8;
+            font-size: 16px;
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            flex: 1;
+        }
+
+        .fillable-blank {
+            background-color: #ffdc00;
+            color: #000;
+            padding: 2px 12px;
+            border-radius: 3px;
+            cursor: text;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            display: inline-block;
+            min-width: auto;
+            width: auto;
+            text-align: left;
+            font-weight: 500;
+            font-style: italic;
+            outline: none;
+            white-space: nowrap;
+            word-wrap: break-word;
+            max-width: 100%;
+            user-select: text;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+        }
+
+        .fillable-blank:hover {
+            background-color: #e6c600;
+            border-color: #000;
+        }
+
+        .fillable-blank:focus {
+            background-color: #fff;
+            border-color: #ffdc00;
+            box-shadow: 0 0 0 2px rgba(255, 220, 0, 0.3);
+            font-style: normal;
+        }
+
+        .fillable-blank.filled {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+            box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.3);
+            font-style: normal;
+        }
+
+        .fillable-blank:empty:before {
+            content: attr(data-placeholder);
+            color: #666;
+            font-style: italic;
+        }
+
+        .tooltip {
+            position: absolute;
+            background-color: #333;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            z-index: 1000;
+            max-width: 300px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            pointer-events: none;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
+        .sdg-dropdown {
+            position: absolute;
+            background-color: white;
+            border: 2px solid #ffdc00;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            min-width: 300px;
+            display: none;
+        }
+
+        .sdg-dropdown.show {
+            display: block;
+        }
+
+        .sdg-option {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s ease;
+        }
+
+        .sdg-option:hover {
+            background-color: #f8f9fa;
+        }
+
+        .sdg-option.selected {
+            background-color: #ffdc00;
+            color: #000;
+        }
+
+        .sdg-option input[type="checkbox"] {
+            margin-right: 10px;
+            width: 16px;
+            height: 16px;
+            transform: scale(1.2);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            border-top: 1px solid #e0e0e0;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .section-labels {
+            position: sticky;
+            top: 0;
+            height: fit-content;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-self: center;
+            flex-shrink: 0;
+            width: 200px;
+        }
+
+        .section-label {
+            background-color: #f0f0f0;
+            color: #666;
+            padding: 8px 12px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            border-left: 3px solid #ffdc00;
+            font-size: 0.9em;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .section-label.active {
+            background-color: #ffdc00;
+            color: #000;
+            border-left: 3px solid #000;
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(255, 220, 0, 0.3);
+        }
+
+        .section-label.completed {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 3px solid #28a745;
+        }
+
+        .input-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .input-modal {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .input-modal h4 {
+            margin-bottom: 20px;
+            color: #000;
+            font-size: 1.2em;
+        }
+
+        .input-modal input,
+        .input-modal textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .input-modal input:focus,
+        .input-modal textarea:focus {
+            outline: none;
+            border-color: #ffdc00;
+        }
+
+        .input-modal textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .modal-button.primary {
+            background-color: #ffdc00;
+            color: #000;
+        }
+
+        .modal-button.primary:hover {
+            background-color: #e6c600;
+        }
+
+        .modal-button.secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .modal-button.secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: #a5a5a5;
+            font-size: 1.1em;
+            font-weight: 500;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #000;
+        }
+
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ffdc00;
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .placeholder-text {
+            color: #666;
+            font-style: italic;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .compose-button {
+            background-color: #ffdc00;
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-weight: 500;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 30px;
+            width: 100%;
+        }
+
+        .compose-button:hover {
+            background-color: #e6c600;
+        }
+
+        .output-section {
+            margin-top: 40px;
+            padding: 30px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            border-left: 4px solid #ffdc00;
+        }
+
+        .output-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .copy-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease;
+        }
+
+        .copy-button:hover {
+            background-color: #218838;
+        }
+
+        .output-section h3 {
+            color: #000;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .output-text {
+            background-color: white;
+            padding: 30px;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+            white-space: pre-line;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .required {
+            color: #ff4444;
+        }
+
+        .form-container {
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .section-labels {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Design Project Brief Composer</h1>
+            <h2>DDES9016 Design Studio Project 1 at UNSW Art & Design</h2>
+        </div>
+
+        <div class="main-content">
+            <div class="brief-article">
+                <div id="articleText" class="article-text">
+                    <strong>Project Title:</strong> <span class="fillable-blank" data-field="projectTitle" data-placeholder="Give your project a working title that captures its essence" data-examples="Give your project a working title that captures its essence" contenteditable="true">Give your project a working title that captures its essence</span><br><br>
+                    
+                    This project brief initiates a design inquiry into <span class="fillable-blank" data-field="guidingQuestion" data-placeholder="a guiding question or goal" data-examples="...how we might... / ways to explore... / strategies for addressing..." contenteditable="true">a guiding question or goal</span> through <span class="fillable-blank" data-field="designIntervention" data-placeholder="your proposed form of design intervention" data-examples="a series of public installations / a speculative service model / a material research project / a community engagement platform" contenteditable="true">your proposed form of design intervention</span> within the context of <span class="fillable-blank" data-field="geographicalLocation" data-placeholder="your chosen geographical location and community" data-examples="the Darling River basin in NSW / suburban Shenzhen province / the Punjab region in India / inner urban Shanghai" contenteditable="true">your chosen geographical location and community</span>.<br><br>
+                    
+                    This inquiry responds to <span class="fillable-blank sdg-selector" data-field="sdgNumber" data-placeholder="SDG" data-examples="Select one or more SDGs from the dropdown">SDG</span>. It frames the problem of <span class="fillable-blank" data-field="generalIssue" data-placeholder="the general issue you are addressing" data-examples="maritime pollution" contenteditable="true">the general issue you are addressing</span> not merely as <span class="fillable-blank" data-field="conventionalUnderstanding" data-placeholder="the conventional or surface-level understanding of the problem" data-examples="poor garbage collection practices" contenteditable="true">the conventional or surface-level understanding of the problem</span>, but as <span class="fillable-blank" data-field="criticalReframing" data-placeholder="your critical reframing of the problem identifying systemic or cultural roots" data-examples="the complex relationships between over-tourism, irresponsible water management, and a disconnect between communities and their local ecosystems" data-multiline="true" contenteditable="true">your critical reframing of the problem identifying systemic or cultural roots</span>.<br><br>
+                    
+                    The core of this investigation will be guided by a <span class="fillable-blank" data-field="theoreticalLens" data-placeholder="your unique theoretical lens, ethical stance or core value" data-examples="designing for more-than-human stakeholders / exploring degrowth through community services / challenging data colonialism through new forms of representation / applying principles of restorative justice to urban planning" data-multiline="true" contenteditable="true">your unique theoretical lens, ethical stance or core value</span>.<br><br>
+                    
+                    The communities central to this inquiry include <span class="fillable-blank" data-field="affectedCommunities" data-placeholder="the specific groups of people or communities most directly affected" data-examples="river fishermen, aquaculture farmers / 60+ elderly single households / children 6-12yrs and their caregivers / the millennial generation" data-multiline="true" contenteditable="true">the specific groups of people or communities most directly affected</span>. Personas may be used to represent and empathise with their diverse experiences.<br><br>
+                    
+                    The potential clients and broader network of stakeholders include <span class="fillable-blank" data-field="stakeholderNetwork" data-placeholder="the wider network of individuals, organisations and non-human entities that have a stake in the problem" data-examples="local councils of the Northern Rivers, environmental activists, commercial shop owners along the riverfront, as well as the riverine animals, insects, and the river system itself" data-multiline="true" contenteditable="true">the wider network of individuals, organisations and non-human entities that have a stake in the problem</span>.<br><br>
+                    
+                    The project brief also outlines design approaches through <span class="fillable-blank" data-field="researchMethods" data-placeholder="the specific design methods and practices you plan to use" data-examples="graphic design especially the use of shock tactics, environmental imagery, poster campaign, 3D graphics as landart, participation by artists, collaboration with textile design" data-multiline="true" contenteditable="true">the specific design methods and practices you plan to use</span>.
+                </div>
+                
+                <div class="section-labels">
+                    <div class="section-label">Project Title</div>
+                    <div class="section-label">Inquiry</div>
+                    <div class="section-label">Context & Problem Framing</div>
+                    <div class="section-label">Critical Perspective</div>
+                    <div class="section-label">Affected Communities</div>
+                    <div class="section-label">Stakeholder Ecology</div>
+                    <div class="section-label">Methods</div>
+                </div>
+            </div>
+        </div>
+
+        <button id="composeButton" class="compose-button">Compose My Brief</button>
+
+        <div id="outputSection" class="output-section hidden">
+            <h3>Your Design Brief</h3>
+            <div id="outputText" class="output-text"></div>
+            <div class="output-buttons">
+                <button id="copyButton" class="copy-button">Copy to Clipboard</button>
+            </div>
+        </div>
+
+        <!-- Tooltip -->
+        <div id="tooltip" class="tooltip"></div>
+
+        <!-- SDG Dropdown -->
+        <div id="sdgDropdown" class="sdg-dropdown">
+            <div class="sdg-option">
+                <input type="checkbox" value="SDG 1: No Poverty" id="sdg1">
+                <label for="sdg1">SDG 1: No Poverty</label>
+            </div>
+            <div class="sdg-option">
+                <input type="checkbox" value="SDG 2: Zero Hunger" id="sdg2">
+                <label for="sdg2">SDG 2: Zero Hunger</label>
+            </div>
+            <div class="sdg-option">
+                <input type="checkbox" value="SDG 3: Good Health and Well-being" id="sdg3">
+                <label for="sdg3">SDG 3: Good Health and Well-being</label>
+            </div>
+            <div class="sdg-option">
+                <input type="checkbox" value="SDG 4: Quality Education" id="sdg4">
+                <label for="sdg4">SDG 4: Quality Education</label>
+            </div>
+            <div class="sdg-option">
+                <input type="checkbox" value="SDG 5: Gender Equality" id="sdg5">
+                <label for="sdg5">SDG 5: Gender Equality</label>
+            </div>
+            <div class="sdg-option">
+                <input type="checkbox" value="SDG 6: Clean Water and Sanitation" id="sdg6">
+                <label for="sdg6">SDG 6: Clean Water and Sanitation</label>
+            </div>
+            <div class="sdg-option">
+                <input type="checkbox" value="SDG 7: Affordable and Clean Energy" id="sdg7">
+                <label for="sdg7">SDG 7: Affordable and Clean Energy</label>
+            </div>
+            <div class="sdg-option">
+                <input type="checkbox" value="SDG 8: Decent Work and Economic Growth" id="sdg8">
+                <label for="sdg8">SDG 8: Decent Work and Economic Growth</label>
+            </div>
+            <div class="sdg-option">
+                <input type="checkbox" value="SDG 9: Industry, Innovation and Infrastructure" id="sdg9">
+                <label for="sdg9">SDG 9: Industry, Innovation and Infrastructure</label>
+            </div>
+            <div class="sdg-option">
+                <input type="checkbox" value="SDG 10: Reduced Inequalities" id="sdg10">
+                <label for="sdg10">SDG 10: Reduced Inequalities</label>
+            </div>
+            <div class="sdg-option">
+                <input type="checkbox" value="SDG 11: Sustainable Cities and Communities" id="sdg11">
+                <label for="sdg11">SDG 11: Sustainable Cities and Communities</label>
+            </div>
+            <div class="sdg-option">
+                <input type="checkbox" value="SDG 12: Responsible Consumption and Production" id="sdg12">
+                <label for="sdg12">SDG 12: Responsible Consumption and Production</label>
+            </div>
+            <div class="sdg-option">
+                <input type="checkbox" value="SDG 13: Climate Action" id="sdg13">
+                <label for="sdg13">SDG 13: Climate Action</label>
+            </div>
+            <div class="sdg-option">
+                <input type="checkbox" value="SDG 14: Life Below Water" id="sdg14">
+                <label for="sdg14">SDG 14: Life Below Water</label>
+            </div>
+            <div class="sdg-option">
+                <input type="checkbox" value="SDG 15: Life on Land" id="sdg15">
+                <label for="sdg15">SDG 15: Life on Land</label>
+            </div>
+            <div class="sdg-option">
+                <input type="checkbox" value="SDG 16: Peace, Justice and Strong Institutions" id="sdg16">
+                <label for="sdg16">SDG 16: Peace, Justice and Strong Institutions</label>
+            </div>
+            <div class="sdg-option">
+                <input type="checkbox" value="SDG 17: Partnerships for the Goals" id="sdg17">
+                <label for="sdg17">SDG 17: Partnerships for the Goals</label>
+            </div>
+        </div>
+
+        <div class="footer">
+            © 2025 Designed and developed by Jono Shaw, Sessional Academic in Interaction Design at UNSW Art & Design.
+        </div>
+
+    </div>
+
+    <script>
+        // Store form data
+        const formData = {};
+        
+        // Define section mapping for progress indicators
+        const sectionMapping = {
+            'projectTitle': 0,
+            'guidingQuestion': 1,
+            'designIntervention': 1,
+            'geographicalLocation': 1,
+            'sdgNumber': 2,
+            'generalIssue': 2,
+            'conventionalUnderstanding': 2,
+            'criticalReframing': 2,
+            'theoreticalLens': 3,
+            'affectedCommunities': 4,
+            'stakeholderNetwork': 5,
+            'researchMethods': 6
+        };
+
+        // Handle tooltips
+        const tooltip = document.getElementById('tooltip');
+        let tooltipTimeout;
+
+        // Handle direct editing of blanks
+        document.querySelectorAll('.fillable-blank').forEach(blank => {
+            // Handle focus events
+            blank.addEventListener('focus', function() {
+                const field = this.getAttribute('data-field');
+                const sectionIndex = sectionMapping[field];
+                
+                // Clear placeholder text when focused
+                if (this.textContent.trim() === this.getAttribute('data-placeholder')) {
+                    this.textContent = '';
+                }
+                
+                // Update progress indicators
+                updateProgressIndicators(sectionIndex);
+            });
+
+            // Handle mouse enter for tooltips
+            blank.addEventListener('mouseenter', function(e) {
+                const examples = this.getAttribute('data-examples');
+                if (examples) {
+                    clearTimeout(tooltipTimeout);
+                    tooltip.textContent = `Example: ${examples}`;
+                    tooltip.classList.add('show');
+                    positionTooltip(e, tooltip);
+                }
+            });
+
+            // Handle mouse leave for tooltips
+            blank.addEventListener('mouseleave', function() {
+                tooltipTimeout = setTimeout(() => {
+                    tooltip.classList.remove('show');
+                }, 100);
+            });
+
+            // Handle input events
+            blank.addEventListener('input', function() {
+                const field = this.getAttribute('data-field');
+                const value = this.textContent.trim();
+                
+                // Store the value
+                formData[field] = value;
+                
+                // Update visual state
+                if (value && value !== this.getAttribute('data-placeholder')) {
+                    this.classList.add('filled');
+                } else {
+                    this.classList.remove('filled');
+                }
+                
+                // Adjust width based on content
+                adjustBlankWidth(this);
+                
+                // Update progress indicators
+                updateProgressIndicators();
+            });
+
+            // Handle paste events to strip formatting
+            blank.addEventListener('paste', function(e) {
+                e.preventDefault();
+                
+                // Get plain text from clipboard
+                const clipboardData = e.clipboardData || window.clipboardData;
+                const pastedText = clipboardData.getData('text/plain');
+                
+                // Insert plain text without formatting
+                document.execCommand('insertText', false, pastedText);
+            });
+
+            // Handle blur events
+            blank.addEventListener('blur', function() {
+                const value = this.textContent.trim();
+                const placeholder = this.getAttribute('data-placeholder');
+                if (!value) {
+                    this.textContent = placeholder;
+                    this.classList.remove('filled');
+                } else if (value !== placeholder) {
+                    this.classList.add('filled');
+                }
+                
+                // Adjust width based on content
+                adjustBlankWidth(this);
+                
+                // Clear active highlight when leaving input
+                updateProgressIndicators();
+            });
+        });
+
+        // Handle SDG selector
+        const sdgSelector = document.querySelector('.sdg-selector');
+        const sdgDropdown = document.getElementById('sdgDropdown');
+        let selectedSDGs = [];
+
+        sdgSelector.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            sdgDropdown.classList.toggle('show');
+            positionSDGDropdown(this, sdgDropdown);
+        });
+
+        // Handle SDG checkbox changes
+        document.querySelectorAll('#sdgDropdown input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    selectedSDGs.push(this.value);
+                } else {
+                    selectedSDGs = selectedSDGs.filter(sdg => sdg !== this.value);
+                }
+                
+                // Update the selector display
+                if (selectedSDGs.length === 0) {
+                    sdgSelector.textContent = 'SDG';
+                    sdgSelector.classList.remove('filled');
+                } else {
+                    sdgSelector.textContent = selectedSDGs.join(', ');
+                    sdgSelector.classList.add('filled');
+                }
+                
+                // Adjust SDG selector width
+                adjustSDGSelectorWidth();
+                
+                // Store the selected SDGs
+                formData.sdgNumber = selectedSDGs;
+                
+                // Update progress indicators
+                updateProgressIndicators();
+            });
+        });
+
+        // Close SDG dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!sdgSelector.contains(e.target) && !sdgDropdown.contains(e.target)) {
+                sdgDropdown.classList.remove('show');
+            }
+        });
+
+        // Section labels are now automatically centered within the brief-article
+
+        // Adjust width of fillable blanks based on content
+        function adjustBlankWidth(blank) {
+            const content = blank.textContent.trim();
+            const placeholder = blank.getAttribute('data-placeholder');
+            const textToMeasure = content || placeholder;
+            
+            // Create a temporary element to measure text width
+            const temp = document.createElement('span');
+            temp.style.visibility = 'hidden';
+            temp.style.position = 'absolute';
+            temp.style.fontSize = window.getComputedStyle(blank).fontSize;
+            temp.style.fontFamily = window.getComputedStyle(blank).fontFamily;
+            temp.style.fontWeight = window.getComputedStyle(blank).fontWeight;
+            temp.style.padding = '0';
+            temp.style.border = 'none';
+            temp.style.margin = '0';
+            temp.style.lineHeight = '1';
+            temp.textContent = textToMeasure;
+            
+            document.body.appendChild(temp);
+            const textWidth = temp.offsetWidth;
+            document.body.removeChild(temp);
+            
+            // Use exact padding calculation for perfect balance
+            const computedStyle = window.getComputedStyle(blank);
+            const paddingLeft = parseFloat(computedStyle.paddingLeft) || 8;
+            const paddingRight = parseFloat(computedStyle.paddingRight) || 8;
+            const totalPadding = paddingLeft + paddingRight;
+            
+            // Set width to text width + exact padding
+            const finalWidth = Math.max(textWidth + totalPadding, 20);
+            blank.style.width = finalWidth + 'px';
+        }
+
+        // Adjust width of SDG selector based on content
+        function adjustSDGSelectorWidth() {
+            const content = sdgSelector.textContent.trim();
+            
+            // Create a temporary element to measure text width
+            const temp = document.createElement('span');
+            temp.style.visibility = 'hidden';
+            temp.style.position = 'absolute';
+            temp.style.fontSize = window.getComputedStyle(sdgSelector).fontSize;
+            temp.style.fontFamily = window.getComputedStyle(sdgSelector).fontFamily;
+            temp.style.fontWeight = window.getComputedStyle(sdgSelector).fontWeight;
+            temp.style.padding = '0';
+            temp.style.border = 'none';
+            temp.style.margin = '0';
+            temp.style.lineHeight = '1';
+            temp.textContent = content;
+            
+            document.body.appendChild(temp);
+            const textWidth = temp.offsetWidth;
+            document.body.removeChild(temp);
+            
+            // Calculate padding width (left + right padding)
+            const computedStyle = window.getComputedStyle(sdgSelector);
+            const paddingLeft = parseFloat(computedStyle.paddingLeft) || 0;
+            const paddingRight = parseFloat(computedStyle.paddingRight) || 0;
+            const totalPadding = paddingLeft + paddingRight;
+            
+            // Set width to text width + padding, with a small minimum
+            const finalWidth = Math.max(textWidth + totalPadding, 40);
+            sdgSelector.style.width = finalWidth + 'px';
+        }
+
+        // Position tooltip
+        function positionTooltip(event, tooltip) {
+            const rect = event.target.getBoundingClientRect();
+            tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
+            tooltip.style.top = rect.top - tooltip.offsetHeight - 10 + 'px';
+        }
+
+        // Position SDG dropdown
+        function positionSDGDropdown(selector, dropdown) {
+            const rect = selector.getBoundingClientRect();
+            dropdown.style.left = rect.left + 'px';
+            dropdown.style.top = rect.bottom + 5 + 'px';
+        }
+
+        // Update progress indicators
+        function updateProgressIndicators(activeSection = null) {
+            const labels = document.querySelectorAll('.section-label');
+            
+            labels.forEach((label, index) => {
+                label.classList.remove('active', 'completed');
+                
+                if (activeSection !== null && index === activeSection) {
+                    label.classList.add('active');
+                } else if (isSectionCompleted(index)) {
+                    label.classList.add('completed');
+                }
+            });
+        }
+
+        // Check if a section is completed
+        function isSectionCompleted(sectionIndex) {
+            const sectionFields = {
+                0: ['projectTitle'],
+                1: ['guidingQuestion', 'designIntervention', 'geographicalLocation'],
+                2: ['sdgNumber', 'generalIssue', 'conventionalUnderstanding', 'criticalReframing'],
+                3: ['theoreticalLens'],
+                4: ['affectedCommunities'],
+                5: ['stakeholderNetwork'],
+                6: ['researchMethods']
+            };
+            
+            const fields = sectionFields[sectionIndex];
+            return fields.every(field => {
+                if (field === 'sdgNumber') {
+                    return formData[field] && formData[field].length > 0;
+                }
+                return formData[field] && formData[field].trim() !== '';
+            });
+        }
+
+        // Format SDGs for output
+        function formatSDGs(sdgs) {
+            if (!sdgs || sdgs.length === 0) return '';
+            if (sdgs.length === 1) return sdgs[0];
+            if (sdgs.length === 2) return `${sdgs[0]} and ${sdgs[1]}`;
+            
+            const lastSDG = sdgs[sdgs.length - 1];
+            const otherSDGs = sdgs.slice(0, -1);
+            return `${otherSDGs.join(', ')} and ${lastSDG}`;
+        }
+
+        // Handle compose button
+        document.getElementById('composeButton').addEventListener('click', function() {
+            // Check if all fields are filled
+            const requiredFields = ['projectTitle', 'guidingQuestion', 'designIntervention', 'geographicalLocation', 'sdgNumber', 'generalIssue', 'conventionalUnderstanding', 'criticalReframing', 'theoreticalLens', 'affectedCommunities', 'stakeholderNetwork', 'researchMethods'];
+            const missingFields = requiredFields.filter(field => {
+                if (field === 'sdgNumber') {
+                    return !formData[field] || formData[field].length === 0;
+                }
+                return !formData[field] || formData[field].trim() === '';
+            });
+            
+            if (missingFields.length > 0) {
+                alert('Please fill in all blanks before composing the brief.');
+                return;
+            }
+            
+            // Compose the brief (without section headers for coherent writing)
+            const brief = `<strong>Project Title: ${formData.projectTitle}</strong>
+
+This project brief initiates a design inquiry into ${formData.guidingQuestion} through ${formData.designIntervention} within the context of ${formData.geographicalLocation}.
+
+This inquiry responds to ${formatSDGs(formData.sdgNumber)}. It frames the problem of ${formData.generalIssue} not merely as ${formData.conventionalUnderstanding}, but as ${formData.criticalReframing}.
+
+The core of this investigation will be guided by a ${formData.theoreticalLens}.
+
+The communities central to this inquiry include ${formData.affectedCommunities}. Personas may be used to represent and empathise with their diverse experiences.
+
+The potential clients and broader network of stakeholders include ${formData.stakeholderNetwork}.
+
+The project brief also outlines design approaches through ${formData.researchMethods}.`;
+            
+            // Display the composed brief
+            document.getElementById('outputText').innerHTML = brief;
+            document.getElementById('outputSection').classList.remove('hidden');
+            
+            // Scroll to the output section
+            document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // Handle copy button
+        document.getElementById('copyButton').addEventListener('click', function() {
+            const outputText = document.getElementById('outputText').textContent;
+            navigator.clipboard.writeText(outputText).then(function() {
+                // Change button text temporarily to show success
+                const originalText = this.textContent;
+                this.textContent = 'Copied!';
+                this.style.backgroundColor = '#28a745';
+                
+                setTimeout(() => {
+                    this.textContent = originalText;
+                    this.style.backgroundColor = '#28a745';
+                }, 2000);
+            }.bind(this)).catch(function(err) {
+                console.error('Could not copy text: ', err);
+                alert('Failed to copy text to clipboard');
+            });
+        });
+
+        // Initialize width adjustments for all blanks
+        document.querySelectorAll('.fillable-blank').forEach(blank => {
+            adjustBlankWidth(blank);
+        });
+
+        // Initialize SDG selector width
+        adjustSDGSelectorWidth();
+
+        // Section labels are now automatically centered with flexbox
+
+        // Initialize progress indicators
+        updateProgressIndicators();
+    </script>
+</body>
+</html>
