@@ -66,6 +66,8 @@
             transition: box-shadow 0.3s ease;
             display: flex;
             gap: 40px;
+            overflow-x: auto;
+            min-width: 0;
         }
 
         .brief-article:hover {
@@ -91,6 +93,11 @@
             -moz-user-select: none;
             -ms-user-select: none;
             flex: 1;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            overflow-x: hidden;
+            word-break: break-word;
+            hyphens: none;
         }
 
         .fillable-blank {
@@ -101,20 +108,23 @@
             cursor: text;
             border: 2px solid transparent;
             transition: all 0.3s ease;
-            display: inline-block;
-            min-width: auto;
-            width: auto;
+            display: inline;
             text-align: left;
             font-weight: 500;
             font-style: italic;
             outline: none;
-            white-space: nowrap;
+            white-space: normal;
             word-wrap: break-word;
-            max-width: 100%;
+            overflow-wrap: break-word;
             user-select: text;
             -webkit-user-select: text;
             -moz-user-select: text;
             -ms-user-select: text;
+            box-decoration-break: clone;
+            -webkit-box-decoration-break: clone;
+            max-width: 100%;
+            word-break: break-all;
+            hyphens: none;
         }
 
         .fillable-blank:hover {
@@ -460,9 +470,23 @@
             padding: 30px;
             border-radius: 4px;
             border: 1px solid #e0e0e0;
-            white-space: pre-line;
+            white-space: normal;
             line-height: 1.8;
             font-size: 16px;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+            hyphens: none;
+            overflow-x: hidden;
+        }
+
+        .output-text p {
+            margin-bottom: 1.5em;
+        }
+
+        .output-text strong {
+            display: block;
+            margin-bottom: 1.5em;
         }
 
         .hidden {
@@ -487,8 +511,27 @@
                 gap: 20px;
             }
             
+            .brief-article {
+                flex-direction: column;
+                gap: 20px;
+                padding: 20px;
+            }
+            
             .section-labels {
                 display: none;
+            }
+            
+            .article-text {
+                min-width: 0;
+                overflow-wrap: break-word;
+            }
+            
+            .fillable-blank {
+                white-space: normal;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                max-width: 100%;
+                min-width: 60px;
             }
         }
     </style>
@@ -694,7 +737,7 @@
                     this.classList.remove('filled');
                 }
                 
-                // Adjust width based on content
+                // Immediately adjust width for responsive behavior
                 adjustBlankWidth(this);
                 
                 // Update progress indicators
@@ -784,36 +827,8 @@
 
         // Adjust width of fillable blanks based on content
         function adjustBlankWidth(blank) {
-            const content = blank.textContent.trim();
-            const placeholder = blank.getAttribute('data-placeholder');
-            const textToMeasure = content || placeholder;
-            
-            // Create a temporary element to measure text width
-            const temp = document.createElement('span');
-            temp.style.visibility = 'hidden';
-            temp.style.position = 'absolute';
-            temp.style.fontSize = window.getComputedStyle(blank).fontSize;
-            temp.style.fontFamily = window.getComputedStyle(blank).fontFamily;
-            temp.style.fontWeight = window.getComputedStyle(blank).fontWeight;
-            temp.style.padding = '0';
-            temp.style.border = 'none';
-            temp.style.margin = '0';
-            temp.style.lineHeight = '1';
-            temp.textContent = textToMeasure;
-            
-            document.body.appendChild(temp);
-            const textWidth = temp.offsetWidth;
-            document.body.removeChild(temp);
-            
-            // Use exact padding calculation for perfect balance
-            const computedStyle = window.getComputedStyle(blank);
-            const paddingLeft = parseFloat(computedStyle.paddingLeft) || 8;
-            const paddingRight = parseFloat(computedStyle.paddingRight) || 8;
-            const totalPadding = paddingLeft + paddingRight;
-            
-            // Set width to text width + exact padding
-            const finalWidth = Math.max(textWidth + totalPadding, 20);
-            blank.style.width = finalWidth + 'px';
+            // Do nothing - let CSS handle natural text flow
+            // The box-decoration-break: clone will handle multi-line backgrounds
         }
 
         // Adjust width of SDG selector based on content
@@ -925,20 +940,20 @@
                 return;
             }
             
-            // Compose the brief (without section headers for coherent writing)
+            // Compose the brief as a flowing article with proper paragraphs
             const brief = `<strong>Project Title: ${formData.projectTitle}</strong>
 
-This project brief initiates a design inquiry into ${formData.guidingQuestion} through ${formData.designIntervention} within the context of ${formData.geographicalLocation}.
+<p>This project brief initiates a design inquiry into ${formData.guidingQuestion} through ${formData.designIntervention} within the context of ${formData.geographicalLocation}.</p>
 
-This inquiry responds to ${formatSDGs(formData.sdgNumber)}. It frames the problem of ${formData.generalIssue} not merely as ${formData.conventionalUnderstanding}, but as ${formData.criticalReframing}.
+<p>This inquiry responds to ${formatSDGs(formData.sdgNumber)}. It frames the problem of ${formData.generalIssue} not merely as ${formData.conventionalUnderstanding}, but as ${formData.criticalReframing}.</p>
 
-The core of this investigation will be guided by a ${formData.theoreticalLens}.
+<p>The core of this investigation will be guided by a ${formData.theoreticalLens}.</p>
 
-The communities central to this inquiry include ${formData.affectedCommunities}. Personas may be used to represent and empathise with their diverse experiences.
+<p>The communities central to this inquiry include ${formData.affectedCommunities}. Personas may be used to represent and empathise with their diverse experiences.</p>
 
-The potential clients and broader network of stakeholders include ${formData.stakeholderNetwork}.
+<p>The potential clients and broader network of stakeholders include ${formData.stakeholderNetwork}.</p>
 
-The project brief also outlines design approaches through ${formData.researchMethods}.`;
+<p>The project brief also outlines design approaches through ${formData.researchMethods}.</p>`;
             
             // Display the composed brief
             document.getElementById('outputText').innerHTML = brief;
@@ -974,6 +989,14 @@ The project brief also outlines design approaches through ${formData.researchMet
 
         // Initialize SDG selector width
         adjustSDGSelectorWidth();
+
+        // Re-adjust widths on window resize
+        window.addEventListener('resize', function() {
+            document.querySelectorAll('.fillable-blank').forEach(blank => {
+                adjustBlankWidth(blank);
+            });
+            adjustSDGSelectorWidth();
+        });
 
         // Section labels are now automatically centered with flexbox
 
